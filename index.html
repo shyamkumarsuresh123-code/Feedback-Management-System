@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Infotech - Portal Access</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; background-color: #f4f6f9; }
+
+        /* FULL SCREEN SECTION STYLES */
+        .full-screen-section {
+            display: none; /* Hidden by default */
+            height: 100vh;
+            width: 100%;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.5s;
+        }
+
+        /* Section Backgrounds */
+        #management-section { background-color: #eaf2f8; color: #333; } /* Light Blueish */
+        #hr-section { background-color: #f3eaf8; color: #333; } /* Light Purpleish */
+        #employee-section { background-color: #eaf8ea; color: #333; } /* Light Greenish */
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* --- LOGO STYLE --- */
+        .logo {
+            width: 250px; 
+            height: auto;
+            margin-bottom: 20px;
+            display: block;
+            /* Removed default background-color: white; */
+            padding: 15px 30px;
+            border-radius: 50px; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); /* Slightly darker shadow for contrast */
+        }
+        
+        /* Portal-Specific Logo Backgrounds */
+        .logo-mgmt { background-color: #0056b3; } /* Blue for Management */
+        .logo-hr { background-color: #8e44ad; }   /* Purple for HR */
+        .logo-emp { background-color: #27ae60; }  /* Green for Employee */
+
+        /* --- TITLE STYLES --- */
+        h1 { 
+            margin-bottom: 10px; 
+            color: #333; 
+            text-transform: uppercase; 
+            letter-spacing: 1px;
+            font-size: 1.8rem;
+        }
+
+        /* FORM STYLES */
+        form { display: flex; flex-direction: column; gap: 15px; width: 320px; background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid #ddd; }
+
+        input { padding: 12px; border-radius: 5px; border: 1px solid #ccc; font-size: 14px; }
+
+        /* BUTTONS */
+        button { padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold; color: white; transition: 0.3s; margin-top: 10px;}
+
+        /* Theme Colors */
+        .btn-mgmt { background-color: #0056b3; } /* Blue */
+        .btn-mgmt:hover { background-color: #004494; }
+
+        .btn-hr { background-color: #8e44ad; } /* Purple */
+        .btn-hr:hover { background-color: #732d91; }
+
+        .btn-emp { background-color: #27ae60; } /* Green */
+        .btn-emp:hover { background-color: #219150; }
+
+        /* NAVIGATION BUTTON CONTAINER */
+        .nav-container {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+        }
+
+        /* SWITCH BUTTONS */
+        .switch-btn {
+            background: transparent;
+            border: 2px solid;
+            padding: 8px 15px;
+            font-size: 13px;
+            cursor: pointer;
+            margin-top: 0;
+            color: #555; 
+            border-color: #555; 
+        }
+        .switch-btn:hover { background: #555; color: white; }
+
+        /* LINKS */
+        a { color: #0056b3; text-decoration: none; font-weight: bold; }
+        a:hover { text-decoration: underline; }
+
+        /* MODAL STYLES */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(5px); }
+        .modal-content { background-color: white; margin: 5% auto; padding: 30px; border-radius: 10px; width: 400px; color: #333; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .close { float: right; font-size: 28px; font-weight: bold; cursor: pointer; color: #aaa; }
+        .close:hover { color: #000; }
+        .scroll-form { max-height: 400px; overflow-y: auto; padding-right: 10px; }
+        .scroll-form input { width: 90%; margin-bottom: 5px;}
+        
+        /* Loading Spinner */
+        #loading { display: none; text-align: center; margin-top: 10px; font-weight: bold; color: #0056b3; }
+        
+        /* DOB Label inside Modal */
+        .dob-label { display: block; font-size: 13px; color: #666; margin-bottom: -10px; margin-left: 2px; text-align: left; }
+    </style>
+</head>
+<body>
+
+<div id="management-section" class="full-screen-section" style="display: flex;">
+    <img src="aiinfo.webp" alt="AI Infotech Logo" class="logo logo-mgmt">
+    <h1>Management Portal</h1>
+
+    <form onsubmit="handleLogin(event, 'management')">
+        <label>Welcome Back, Admin</label>
+        <input type="text" id="mgmt-id" name="username" placeholder="Admin ID" required>
+        <input type="password" id="mgmt-pass" name="password" placeholder="Password" required>
+        <button type="submit" class="btn-mgmt">Login to Management</button>
+    </form>
+
+    <div class="nav-container">
+        <button class="switch-btn" onclick="showHR()">Go to HR Portal</button>
+        <button class="switch-btn" onclick="showEmployee()">Go to Employee Portal</button>
+    </div>
+</div>
+
+<div id="hr-section" class="full-screen-section">
+    <img src="aiinfo.webp" alt="AI Infotech Logo" class="logo logo-hr">
+    <h1 style="color: #8e44ad;">HR Portal</h1>
+
+    <form onsubmit="handleLogin(event, 'hr')">
+        <label>Welcome Back, HR Team</label>
+        <input type="text" id="hr-id" name="username" placeholder="HR ID" required>
+        <input type="password" id="hr-pass" name="password" placeholder="Password" required>
+        <button type="submit" class="btn-hr">Login to HR</button>
+    </form>
+
+    <div class="nav-container">
+        <button class="switch-btn" onclick="showManagement()">Go to Management</button>
+        <button class="switch-btn" onclick="showEmployee()">Go to Employee Portal</button>
+    </div>
+</div>
+
+<div id="employee-section" class="full-screen-section">
+    <img src="aiinfo.webp" alt="AI Infotech Logo" class="logo logo-emp">
+    <h1 style="color: #27ae60;">Employee Portal</h1>
+
+    <form onsubmit="handleLogin(event, 'employee')">
+        <label>Employee Login</label>
+        <input type="text" id="emp-id" name="username" placeholder="Employee ID" required>
+        <input type="password" id="emp-pass" name="password" placeholder="Password" required>
+        <button type="submit" class="btn-emp">Login</button>
+    </form>
+
+    <p style="margin-top: 20px;">
+        New Employee? <a href="#" onclick="openModal()" style="color:#27ae60;">Register Here</a>
+    </p>
+
+    <div class="nav-container">
+        <button class="switch-btn" onclick="showManagement()">Go to Management</button>
+        <button class="switch-btn" onclick="showHR()">Go to HR Portal</button>
+    </div>
+</div>
+
+<div id="regModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h2 style="text-align: center; margin-top: 0;">New Registration</h2>
+        <form id="registrationForm" class="scroll-form">
+            <input type="text" name="User Name" placeholder="User Name (Login ID)" required>
+            <input type="text" name="First Name" placeholder="First Name" required>
+            <input type="text" name="Last Name" placeholder="Last Name" required>
+            <input type="email" name="Email" placeholder="Email" required>
+            
+            <label class="dob-label">Date Of Birth:</label>
+            <input type="text" name="Date Of Birth" placeholder="Date of Birth (DD/MM/YYYY)" required>
+            
+            <input type="tel" name="Phone Number" placeholder="Phone Number" required>
+            <input type="tel" name="Emergency Contact Number" placeholder="Emergency Contact Number" required>
+            
+            <input type="password" name="Password" placeholder="Password" required>
+            
+            <input type="password" name="confirmPassword" placeholder="Confirm Password" required>
+
+            <button type="submit" class="btn-emp" style="margin-top: 10px;">Submit Registration</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // 1. PAGE NAVIGATION FUNCTIONS
+    window.showManagement = function() {
+        hideAll();
+        document.getElementById('management-section').style.display = 'flex';
+    }
+
+    window.showHR = function() {
+        hideAll();
+        document.getElementById('hr-section').style.display = 'flex';
+    }
+
+    window.showEmployee = function() {
+        hideAll();
+        document.getElementById('employee-section').style.display = 'flex';
+    }
+
+    function hideAll() {
+        document.getElementById('management-section').style.display = 'none';
+        document.getElementById('hr-section').style.display = 'none';
+        document.getElementById('employee-section').style.display = 'none';
+    }
+
+    // Modal Handling
+    window.openModal = function() { document.getElementById("regModal").style.display = "block"; }
+    window.closeModal = function() { document.getElementById("regModal").style.display = "none"; }
+    
+    window.onclick = function(event) {
+        if (event.target == document.getElementById("regModal")) { 
+            window.closeModal(); 
+        }
+    }
+
+    // 2. LOGIN HANDLING (API Removed - Hardcoded Credentials)
+    window.handleLogin = function(event, role) {
+        event.preventDefault();
+        
+        // --- MANAGEMENT LOGIN ---
+        if(role === 'management') {
+            const id = document.getElementById('mgmt-id').value;
+            const pass = document.getElementById('mgmt-pass').value;
+
+            if(id === "admin@aiinfotech" && pass === "admin123") {
+                sessionStorage.setItem("userRole", "admin");
+                sessionStorage.setItem("userName", "Administrator");
+                window.location.href = "management_dashboard.html";
+            } else {
+                alert("Invalid Management Credentials");
+            }
+
+        // --- HR LOGIN ---
+        } else if(role === 'hr') {
+            const id = document.getElementById('hr-id').value;
+            const pass = document.getElementById('hr-pass').value;
+
+            if(id === "hr@aiinfotech" && pass === "hr123") {
+                sessionStorage.setItem("userRole", "hr");
+                sessionStorage.setItem("userName", "HR Admin");
+                window.location.href = "hr_dashboard.html"; 
+            } else {
+                alert("Invalid HR Credentials");
+            }
+
+        // --- EMPLOYEE LOGIN ---
+        } else if(role === 'employee') {
+            const id = document.getElementById('emp-id').value;
+            const pass = document.getElementById('emp-pass').value;
+
+            // Database removed, check static credentials only
+            if(id === "employee@aiinfotech" && pass === "employee123") {
+                sessionStorage.setItem("userRole", "employee");
+                sessionStorage.setItem("userName", "employee");
+                sessionStorage.setItem("fullName", "Verified Employee");
+                window.location.href = "employee_dashboard.html";
+            } else {
+                alert("Invalid Employee Credentials");
+            }
+        }
+    }
+
+    // 3. REGISTRATION LOGIC (Simulated - No API)
+    const regForm = document.getElementById('registrationForm');
+    
+    regForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const formData = new FormData(regForm);
+        const userData = Object.fromEntries(formData.entries());
+
+        if(userData["Password"] !== userData["confirmPassword"]){
+            alert("Passwords do not match!");
+            return;
+        }
+
+        // Simulate Success
+        alert("Registration Successful (Demo Mode). Please login with: employee@aiinfotech / employee123");
+        regForm.reset();
+        window.closeModal();
+    });
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Management Dashboard - AI Infotech</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            background-color: #fcf3cf; /* Very Light Yellow BG */
+        }
+
+        /* --- SIDEBAR STYLES (MANAGEMENT GOLD THEME) --- */
+        .sidebar {
+            width: 280px;
+            background-color: #f39c12; /* Premium Gold/Amber */
+            color: white;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+
+        /* --- CIRCULAR LOGO BADGE --- */
+        .logo-area {
+            background-color: #9c6002; /* Darker Gold for contrast */
+            width: 180px;  
+            height: 180px;
+            border-radius: 50%; 
+            margin: 0 auto 30px auto; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            border: 4px solid rgba(255,255,255,0.2);
+            overflow: hidden; 
+        }
+        
+        .logo-area img {
+            max-width: 85%;
+            height: auto;
+            display: block;
+        }
+
+        .welcome-label { font-size: 20px; font-weight: bold; margin-bottom: 5px; text-align: center; text-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .greet-note { font-size: 13px; opacity: 0.95; margin-bottom: 30px; font-style: italic; border-bottom: 1px solid rgba(255,255,255,0.4); padding-bottom: 15px; text-align: center;}
+
+        .menu-item { padding: 12px 15px; cursor: pointer; border-radius: 8px; transition: 0.3s; font-weight: 500; margin-bottom: 5px; }
+        .menu-item:hover { background-color: #e67e22; }
+        .menu-item.active { background-color: white; color: #d35400; font-weight: bold; } /* Rust Orange text */
+
+        /* --- SIDEBAR SEARCH BAR --- */
+        .search-container {
+            margin-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.3);
+            padding-top: 20px;
+        }
+        .search-label { font-size: 14px; font-weight: bold; margin-bottom: 8px; display: block; }
+        .search-input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+            font-size: 14px;
+            color: #333;
+        }
+        .search-btn {
+            width: 100%;
+            padding: 10px;
+            background-color: #9c6002; /* Dark Grey for contrast */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .search-btn:hover { background-color: #000; }
+
+
+        .logout-btn { margin-top: auto; background-color: #9c6002; border: none; padding: 15px; color: white; cursor: pointer; border-radius: 8px; font-weight: bold; text-align: left; }
+        .logout-btn:hover { background-color: rgba(0,0,0,0.2); }
+
+        /* --- MAIN CONTENT --- */
+        .main-content { flex: 1; padding: 40px; overflow-y: auto; }
+        .container { max-width: 100%; margin: 0 auto; }
+
+        .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        h2 { color: #ba4a00; border-bottom: 3px solid #f39c12; padding-bottom: 10px; display: inline-block; margin: 0; }
+
+        .btn-download {
+            background-color: #27ae60; /* Keep Green for intuitive 'Download' action */
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .btn-download:hover { background-color: #219150; }
+
+        /* --- DATA TABLE CARD --- */
+        .data-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            overflow-x: auto; 
+        }
+
+        table { width: 100%; border-collapse: collapse; min-width: 3000px; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; font-size: 13px; vertical-align: top; border-right: 1px solid #eee; }
+        
+        /* Table Header: Light Orange BG, Dark Text */
+        th { background-color: #fdebd0; color: #ba4a00; font-weight: bold; position: sticky; top: 0; }
+        tr:hover { background-color: #fff9e6; }
+        
+        /* Column Widths */
+        .col-sno { width: 50px; font-weight: bold; }
+        .col-token { width: 150px; color: #d35400; font-weight: bold; }
+        .col-personal { width: 180px; font-weight: 600; color: #333; }
+
+        /* --- SEARCH MODAL STYLES --- */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(5px); }
+        .modal-content { 
+            background-color: white; 
+            margin: 5% auto; 
+            padding: 30px; 
+            border-radius: 10px; 
+            width: 60%; 
+            max-width: 800px;
+            color: #333; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); 
+            max-height: 80vh; 
+            overflow-y: auto;
+        }
+        .close { float: right; font-size: 28px; font-weight: bold; cursor: pointer; color: #aaa; }
+        .close:hover { color: #000; }
+        
+        .result-header { border-bottom: 2px solid #f39c12; margin-bottom: 20px; padding-bottom: 10px; }
+        .result-info { background: #fef9e7; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 5px solid #f39c12; }
+        .result-qa { margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .result-q { font-weight: bold; color: #444; display: block; margin-bottom: 5px; }
+        .result-a { color: #d35400; font-weight: 600; font-size: 15px; } /* Rust color for answers */
+
+
+        /* --- PDF STYLES --- */
+        #pdf-content { display: none; padding: 20px; }
+        
+        .pdf-main-header {
+            text-align: center; 
+            color: #2c3e50; 
+            margin-bottom: 30px; 
+            font-size: 32px; 
+            font-weight: 800;
+            text-transform: uppercase;
+            border-bottom: 3px solid #f39c12; /* Gold underline */
+            padding-bottom: 15px;
+            letter-spacing: 1px;
+        }
+
+        .pdf-entry { 
+            border: 1px solid #ddd; 
+            padding: 20px; 
+            margin-bottom: 25px; 
+            border-radius: 8px;
+            background-color: #fff;
+            page-break-inside: avoid;
+        }
+        
+        .pdf-ref-header {
+            background-color: #f39c12; /* Gold Header */
+            color: white;
+            padding: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .pdf-personal-info {
+            background-color: #fef9e7;
+            padding: 10px;
+            border-left: 4px solid #f39c12;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #444;
+        }
+
+        .pdf-qa-row {
+            margin-bottom: 12px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+        }
+
+        .pdf-question { font-weight: bold; color: #444; display: block; margin-bottom: 4px; font-size: 13px; }
+        .pdf-answer { color: #d35400; font-size: 16px; padding-left: 10px; font-weight: 600; } /* Dark Orange Answers */
+        
+        #loading { text-align: center; color: #d35400; font-weight: bold; margin-top: 20px; }
+
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="logo-area">
+            <img src="aiinfo.webp" alt="Logo">
+        </div>
+
+        <div class="welcome-label">Welcome, Director</div>
+        <div class="greet-note">Full Executive Overview.</div>
+
+        <div class="menu-item active">Master Feedback Data</div>
+
+        <div class="search-container">
+            <label class="search-label">Find Feedback</label>
+            <input type="text" id="searchInput" class="search-input" placeholder="Enter Token No.">
+            <button class="search-btn" onclick="searchByToken()">Search</button>
+        </div>
+
+        <button class="logout-btn" onclick="logout()">← Logout</button>
+    </div>
+
+    <div class="main-content">
+        <div class="container">
+            
+            <div class="header-flex">
+                <h2>Full Executive Feedback Sheet</h2>
+                <button class="btn-download" onclick="downloadPDF()">Download Executive Report (PDF)</button>
+            </div>
+
+            <div class="data-card">
+                <div id="loading">Loading Master Data from SheetDB...</div>
+                
+                <table id="feedbackTable" style="display:none;">
+                    <thead>
+                        <tr>
+                            <th class="col-sno">S.No</th>
+                            <th class="col-token">Token</th>
+                            <th class="col-personal">First Name</th>
+                            <th class="col-personal">Last Name</th>
+                            <th class="col-personal">Email</th>
+                            <th class="col-personal">Phone</th>
+                            
+                            <th>Q1: Overall Exp</th>
+                            <th>Q2: Role</th>
+                            <th>Q3: Environment</th>
+                            <th>Q4: Respect</th>
+                            <th>Q5: Comm.</th>
+                            <th>Q6: Supervisor</th>
+                            <th>Q7: Workload</th>
+                            <th>Q8: Tools</th>
+                            <th>Q9: Learning</th>
+                            <th>Q10: Growth</th>
+                            <th>Q11: Work-Life</th>
+                            <th>Q12: Ideas</th>
+                            <th>Q13: Salary</th>
+                            <th>Q14: Recommend</th>
+                            <th>Q15: Comments</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="searchModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeSearchModal()">&times;</span>
+            <div id="searchResultContent">
+                </div>
+        </div>
+    </div>
+
+    <div id="pdf-content">
+        <div class="pdf-main-header">Full Executive Feedback Report</div>
+        <div id="pdf-body"></div>
+    </div>
+
+    <script>
+        // ==========================================
+        // CONFIGURATION
+        // ==========================================
+        const SHEETDB_API_URL = 'https://sheetdb.io/api/v1/r781uwwg4lmp9'; 
+        // ==========================================
+
+        let globalFeedbackData = [];
+
+        const questionMap = {
+            "Q1": "1. How satisfied are you with your overall experience working at AI Infotech?",
+            "Q2": "2. Do you clearly understand your role and responsibilities?",
+            "Q3": "3. How would you rate the work environment and office culture?",
+            "Q4": "4. Do you feel respected and valued by your team and management?",
+            "Q5": "5. How effective is communication between employees and management?",
+            "Q6": "6. Are you satisfied with the support and guidance provided by your immediate supervisor?",
+            "Q7": "7. Do you feel the workload assigned to you is reasonable and manageable?",
+            "Q8": "8. Are you provided with the necessary tools, resources, and technology?",
+            "Q9": "9. How satisfied are you with the learning and skill development opportunities?",
+            "Q10": "10. Do you feel there are fair opportunities for career growth and promotion?",
+            "Q11": "11. How would you rate the company’s policies related to work-life balance?",
+            "Q12": "12. Are your ideas, suggestions, or feedback encouraged and taken seriously?",
+            "Q13": "13. How satisfied are you with the salary, incentives, and benefits provided?",
+            "Q14": "14. Would you recommend AI Infotech as a good place to work to others?",
+            "Comments": "15. Additional Comments / Improvements"
+        };
+
+        window.onload = function() {
+            // Check Management/Admin Login
+            if (sessionStorage.getItem("userRole") !== "admin") {
+                alert("Access Denied. Management Access Only.");
+                window.location.href = "index.html"; 
+            }
+            fetchData();
+        };
+
+        function fetchData() {
+            fetch(SHEETDB_API_URL)
+            .then(response => response.json())
+            .then(data => {
+                globalFeedbackData = data;
+                renderTable(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('loading').innerText = "Failed to load data.";
+            });
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('tableBody');
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('feedbackTable').style.display = 'table';
+            tbody.innerHTML = "";
+
+            data.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="col-sno">${index + 1}</td>
+                    <td class="col-token">${row.Token || '-'}</td>
+                    <td class="col-personal">${row.FirstName}</td>
+                    <td class="col-personal">${row.LastName}</td>
+                    <td class="col-personal">${row.Email}</td>
+                    <td class="col-personal">${row.Phone}</td>
+
+                    <td>${row.Q1 || ''}</td>
+                    <td>${row.Q2 || ''}</td>
+                    <td>${row.Q3 || ''}</td>
+                    <td>${row.Q4 || ''}</td>
+                    <td>${row.Q5 || ''}</td>
+                    <td>${row.Q6 || ''}</td>
+                    <td>${row.Q7 || ''}</td>
+                    <td>${row.Q8 || ''}</td>
+                    <td>${row.Q9 || ''}</td>
+                    <td>${row.Q10 || ''}</td>
+                    <td>${row.Q11 || ''}</td>
+                    <td>${row.Q12 || ''}</td>
+                    <td>${row.Q13 || ''}</td>
+                    <td>${row.Q14 || ''}</td>
+                    <td>${row.Comments || ''}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // --- SEARCH FUNCTION ---
+        function searchByToken() {
+            const input = document.getElementById('searchInput').value.trim();
+            if (!input) {
+                alert("Please enter a Token Number.");
+                return;
+            }
+
+            const result = globalFeedbackData.find(row => row.Token === input);
+
+            if (result) {
+                showSearchResult(result);
+            } else {
+                alert("Token not found! Please check the number.");
+            }
+        }
+
+        function showSearchResult(row) {
+            const modal = document.getElementById('searchModal');
+            const content = document.getElementById('searchResultContent');
+            
+            let html = `
+                <div class="result-header">
+                    <h2 style="margin:0;">Feedback Details</h2>
+                    <span style="color:#d35400; font-weight:bold;">Token: ${row.Token}</span>
+                </div>
+                <div class="result-info">
+                    <strong>Employee:</strong> ${row.FirstName} ${row.LastName}<br>
+                    <strong>Email:</strong> ${row.Email}<br>
+                    <strong>Phone:</strong> ${row.Phone}
+                </div>
+            `;
+
+            for (const [key, fullQuestion] of Object.entries(questionMap)) {
+                if (row[key]) {
+                    html += `
+                        <div class="result-qa">
+                            <span class="result-q">${fullQuestion}</span>
+                            <div class="result-a">${row[key]}</div>
+                        </div>
+                    `;
+                }
+            }
+
+            content.innerHTML = html;
+            modal.style.display = 'block';
+        }
+
+        function closeSearchModal() {
+            document.getElementById('searchModal').style.display = 'none';
+        }
+
+        function downloadPDF() {
+            const pdfBody = document.getElementById('pdf-body');
+            pdfBody.innerHTML = ""; 
+
+            globalFeedbackData.forEach((row, index) => {
+                let entryHtml = `<div class="pdf-entry">`;
+                
+                entryHtml += `
+                    <div class="pdf-ref-header">
+                        <span>#${index + 1} | Token: ${row.Token}</span>
+                        <span>${row.FirstName} ${row.LastName}</span>
+                    </div>
+                `;
+
+                entryHtml += `
+                    <div class="pdf-personal-info">
+                        <strong>Contact Info:</strong> ${row.Email} | ${row.Phone}
+                    </div>
+                `;
+                
+                for (const [key, fullQuestion] of Object.entries(questionMap)) {
+                    if (row[key]) {
+                        entryHtml += `
+                            <div class="pdf-qa-row">
+                                <span class="pdf-question">${fullQuestion}</span>
+                                <div class="pdf-answer">${row[key]}</div>
+                            </div>
+                        `;
+                    }
+                }
+                
+                entryHtml += `</div>`;
+                pdfBody.innerHTML += entryHtml;
+            });
+
+            const element = document.getElementById('pdf-content');
+            element.style.display = 'block';
+
+            var opt = {
+                margin:       0.5,
+                filename:     'Executive_Feedback_Report.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
+                pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                element.style.display = 'none';
+            });
+        }
+
+        function logout() {
+            sessionStorage.clear();
+            window.location.href = "index.html";
+        }
+    </script>
+
+</body>
+</html>

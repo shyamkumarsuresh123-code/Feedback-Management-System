@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Employee Dashboard - AI Infotech</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            background-color: #f4f6f9;
+        }
+
+        /* --- SIDEBAR STYLES (THEME: Modern Teal #009688) --- */
+        .sidebar {
+            width: 280px;
+            background-color: #009688; /* Primary Teal */
+            color: white;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+
+        /* --- CIRCULAR LOGO BADGE (Dark Teal for Contrast) --- */
+        .logo-area {
+            background-color: #004D40; /* Dark Teal */
+            width: 180px;  
+            height: 180px;
+            border-radius: 50%; 
+            margin: 0 auto 30px auto; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            border: 4px solid rgba(255,255,255,0.15); 
+            overflow: hidden; 
+        }
+        
+        .logo-area img {
+            max-width: 85%;
+            height: auto;
+            display: block;
+        }
+
+        /* Sidebar Text */
+        .welcome-label { font-size: 20px; font-weight: bold; margin-bottom: 5px; text-align: center;}
+        .greet-note { font-size: 13px; opacity: 0.95; margin-bottom: 30px; font-style: italic; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 15px; text-align: center;}
+
+        /* Menu Links */
+        .menu-item { padding: 12px 15px; cursor: pointer; border-radius: 8px; transition: 0.3s; font-weight: 500; margin-bottom: 5px; }
+        .menu-item:hover { background-color: #00796B; } /* Medium Teal Hover */
+        .menu-item.active { background-color: white; color: #00796B; font-weight: bold; }
+
+        .logout-btn { margin-top: auto; background-color: rgba(0,0,0,0.1); border: none; padding: 15px; color: white; cursor: pointer; border-radius: 8px; font-weight: bold; text-align: left; }
+        .logout-btn:hover { background-color: rgba(0,0,0,0.2); }
+
+        /* --- MAIN CONTENT --- */
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+        }
+
+        /* Heading underline uses Teal */
+        h2 { color: #2c3e50; margin-top: 0; border-bottom: 2px solid #009688; padding-bottom: 10px; display: inline-block; }
+        
+        /* FORM GRID */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+            background: #e0f2f1; /* Very Light Teal Background */
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #b2dfdb;
+        }
+
+        label { font-weight: 600; color: #00695C; font-size: 14px; display: block; margin-bottom: 8px; margin-top: 15px; }
+        
+        /* INPUT STYLING */
+        input[type="text"], input[type="email"], input[type="tel"], textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-family: 'Segoe UI', sans-serif;
+            box-sizing: border-box;
+            transition: 0.3s;
+        }
+        
+        input:focus, textarea:focus {
+            border-color: #009688;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 150, 136, 0.3);
+        }
+
+        textarea { height: 100px; resize: vertical; }
+
+        .question-block {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .question-text {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .submit-btn {
+            background-color: #009688; /* Teal */
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 18px;
+            width: 100%;
+            transition: 0.3s;
+            margin-top: 20px;
+        }
+        .submit-btn:hover { background-color: #00796B; transform: translateY(-2px); }
+
+        /* Loading Overlay */
+        #loading-overlay {
+            display: none;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.8);
+            z-index: 999;
+            text-align: center;
+            padding-top: 20%;
+            font-size: 24px;
+            color: #009688;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loading-overlay">Submitting Feedback...</div>
+
+    <div class="sidebar">
+        <div class="logo-area">
+            <img src="aiinfo.webp" alt="Logo">
+        </div>
+
+        <div class="welcome-label">Welcome, <span id="display-name">Employee</span></div>
+        <div class="greet-note">Your voice helps us grow together.</div>
+
+        <div class="menu-item active">Feedback Portal</div>
+
+        <button class="logout-btn" onclick="logout()">← Logout</button>
+    </div>
+
+    <div class="main-content">
+        <div class="container">
+            <div class="card">
+                <h2>Annual Employee Feedback</h2>
+                <p>Please fill out the details below. A unique token will be generated for your submission automatically.</p>
+                
+                <form id="feedbackForm" onsubmit="submitToGoogleSheet(event)">
+                    
+                    <h3 style="color:#00796B;">Part 1: Employee Details</h3>
+                    <div class="form-grid">
+                        <div>
+                            <label>First Name</label>
+                            <input type="text" name="FirstName" id="fname" placeholder="Enter First Name" required>
+                        </div>
+                        <div>
+                            <label>Last Name</label>
+                            <input type="text" name="LastName" id="lname" placeholder="Enter Last Name" required>
+                        </div>
+                        <div>
+                            <label>Email ID</label>
+                            <input type="email" name="Email" id="email" placeholder="Enter Email" required>
+                        </div>
+                        <div>
+                            <label>Phone Number</label>
+                            <input type="tel" name="Phone" id="phone" placeholder="Enter Phone Number" required>
+                        </div>
+                        <input type="hidden" name="Token" id="tokenField">
+                    </div>
+
+                    <h3 style="color:#00796B;">Part 2: Feedback Questions</h3>
+                    
+                    <div class="question-block">
+                        <div class="question-text">1. How satisfied are you with your overall experience working at AI Infotech?</div>
+                        <input type="text" name="Q1" placeholder="Type your answer here..." required>
+                    </div>
+
+                    <div class="question-block">
+                        <div class="question-text">2. Do you clearly understand your role and responsibilities?</div>
+                        <input type="text" name="Q2" placeholder="Type your answer here..." required>
+                    </div>
+
+                    <div class="question-block">
+                        <div class="question-text">3. How would you rate the work environment and office culture?</div>
+                        <input type="text" name="Q3" placeholder="Type your answer here..." required>
+                    </div>
+
+                    <div class="question-block">
+                        <div class="question-text">4. Do you feel respected and valued by your team and management?</div>
+                        <input type="text" name="Q4" placeholder="Type your answer here..." required>
+                    </div>
+
+                    <div class="question-block">
+                        <div class="question-text">5. How effective is communication between employees and management?</div>
+                        <input type="text" name="Q5" placeholder="Type your answer here..." required>
+                    </div>
+
+                    <div class="question-block">
+                        <div class="question-text">6. Are you satisfied with the support and guidance provided by your immediate supervisor?</div>
+                        <input type="text" name="Q6" placeholder="Type your answer here..." required>
+                    </div>
+
+                    <div class="question-block">
+                        <div class="question-text">7. Do you feel the workload assigned to you is reasonable and manageable?</div>
+                        <input type="text" name="Q7" placeholder="Type your answer here..." required>
+                    </div>
+
+                    <div class="question-block">
+                        <div class="question-text">8. Are you provided with the necessary tools, resources, and technology?</div>
+                        <input type="text" name="Q8" placeholder="Type your answer here..." required>
+                    </div>
+
+                    <div class="question-block">
+                        <div class="question-text">9. How satisfied are you with the learning and skill development opportunities?</div>
+                        <input type="text" name="Q9" placeholder="Type your answer here..." required>
+                    </div>
+
+                    <div class="question-block">
+                        <div class="question-text">10. Do you feel there are fair opportunities for career growth and promotion?</div>
+                        <input type="text" name="Q10" placeholder="Type your answer here..." required>
+                    </div>
+
+                    <div class="question-block">
+                        <div class="question-text">11. How would you rate the company’s policies related to work-life balance?</div>
+                        <input type="text" name="Q11" placeholder="Type your answer here..." required>
+                    </div>
+
+                    <div class="question-block">
+                        <div class="question-text">12. Are your ideas, suggestions, or feedback encouraged and taken seriously?</div>
+                        <input type="text" name="Q12" placeholder="Type your answer here..." required>
+                    </div>
+
+                    <div class="question-block">
+                        <div class="question-text">13. How satisfied are you with the salary, incentives, and benefits provided?</div>
+                        <input type="text" name="Q13" placeholder="Type your answer here..." required>
+                    </div>
+
+                    <div class="question-block">
+                        <div class="question-text">14. Would you recommend AI Infotech as a good place to work to others?</div>
+                        <input type="text" name="Q14" placeholder="Type your answer here..." required>
+                    </div>
+
+                    <div class="question-block">
+                        <div class="question-text">15. What improvements or changes would you suggest? (And other comments)</div>
+                        <textarea name="Comments" placeholder="Type your detailed suggestions here..." required></textarea>
+                    </div>
+
+                    <button type="submit" class="submit-btn">Submit Feedback</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // CONFIGURATION: YOUR GOOGLE APPS SCRIPT URL
+        // ==========================================
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw_E0EK9jG51QD2yiStLugFa9dX0T7mITSPZyOO4IaJwQhMsriPJEOEFVzPSaYrHePGVg/exec'; 
+        // ==========================================
+
+        window.onload = function() {
+            const role = sessionStorage.getItem("userRole");
+            const name = sessionStorage.getItem("fullName"); 
+
+            if (role !== "employee") {
+                alert("Access Denied. Please Login.");
+                window.location.href = "index.html"; 
+            }
+
+            if (name) {
+                document.getElementById('display-name').innerText = name.split(" ")[0];
+            }
+            generateToken();
+        };
+
+        function generateToken() {
+            const timestamp = Date.now().toString().slice(-4);
+            const random = Math.floor(Math.random() * 10000);
+            const token = `TKN-${timestamp}-${random}`;
+            document.getElementById('tokenField').value = token;
+        }
+
+        function submitToGoogleSheet(e) {
+            e.preventDefault();
+            
+            const form = document.getElementById('feedbackForm');
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            const loading = document.getElementById('loading-overlay');
+
+            loading.style.display = 'block';
+
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors', 
+                headers: {
+                    'Content-Type': 'text/plain'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(() => {
+                loading.style.display = 'none';
+                alert("Feedback Submitted Successfully!\nToken: " + data.Token);
+                form.reset();
+                generateToken();
+            })
+            .catch(error => {
+                loading.style.display = 'none';
+                console.error("Error:", error);
+                alert("Network Error: Could not connect to the server.");
+            });
+        }
+
+        function logout() {
+            sessionStorage.clear();
+            window.location.href = "index.html";
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HR Dashboard - AI Infotech</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            background-color: #f4f6f9;
+        }
+
+        /* --- SIDEBAR STYLES --- */
+        .sidebar {
+            width: 280px;
+            background-color: #8e44ad; /* HR Purple */
+            color: white;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+
+        /* --- CIRCULAR LOGO BADGE --- */
+        .logo-area {
+            background-color: #4a235a; 
+            width: 180px;  
+            height: 180px;
+            border-radius: 50%; 
+            margin: 0 auto 30px auto; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            border: 4px solid rgba(255,255,255,0.1);
+            overflow: hidden; 
+        }
+        
+        .logo-area img {
+            max-width: 85%;
+            height: auto;
+            display: block;
+        }
+
+        .welcome-label { font-size: 20px; font-weight: bold; margin-bottom: 5px; text-align: center;}
+        .greet-note { font-size: 13px; opacity: 0.9; margin-bottom: 30px; font-style: italic; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 15px; text-align: center;}
+
+        .menu-item { padding: 12px 15px; cursor: pointer; border-radius: 8px; transition: 0.3s; font-weight: 500; margin-bottom: 5px; }
+        .menu-item:hover { background-color: #732d91; }
+        .menu-item.active { background-color: white; color: #8e44ad; font-weight: bold; }
+
+        .logout-btn { margin-top: auto; background-color: rgba(0,0,0,0.2); border: none; padding: 15px; color: white; cursor: pointer; border-radius: 8px; font-weight: bold; text-align: left; }
+        .logout-btn:hover { background-color: rgba(0,0,0,0.4); }
+
+        /* --- MAIN CONTENT --- */
+        .main-content { flex: 1; padding: 40px; overflow-y: auto; }
+        .container { max-width: 100%; margin: 0 auto; }
+
+        .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        h2 { color: #2c3e50; border-bottom: 2px solid #8e44ad; padding-bottom: 10px; display: inline-block; margin: 0; }
+
+        .btn-download {
+            background-color: #e74c3c;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .btn-download:hover { background-color: #c0392b; }
+
+        /* --- DATA TABLE CARD --- */
+        .data-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            overflow-x: auto; 
+        }
+
+        table { width: 100%; border-collapse: collapse; min-width: 2500px; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; font-size: 13px; vertical-align: top; border-right: 1px solid #eee; }
+        th { background-color: #f8f9fa; color: #8e44ad; font-weight: bold; position: sticky; top: 0; }
+        tr:hover { background-color: #f1f1f1; }
+        
+        .col-sno { width: 50px; font-weight: bold; }
+        .col-token { width: 150px; color: #8e44ad; font-weight: bold; }
+
+        /* --- PDF STYLES --- */
+        #pdf-content { display: none; padding: 20px; }
+        
+        /* 1. UPDATED BIG HEADER STYLE */
+        .pdf-main-header {
+            text-align: center; 
+            color: #2c3e50; 
+            margin-bottom: 30px; 
+            font-size: 32px; /* Much Bigger */
+            font-weight: 800;
+            text-transform: uppercase;
+            border-bottom: 3px solid #8e44ad; /* Underline */
+            padding-bottom: 15px;
+            letter-spacing: 1px;
+        }
+
+        .pdf-entry { 
+            border: 1px solid #ddd; 
+            padding: 20px; 
+            margin-bottom: 25px; 
+            border-radius: 8px;
+            background-color: #fff;
+            page-break-inside: avoid; /* Tries to keep entry on one page */
+        }
+        
+        .pdf-ref-header {
+            background-color: #8e44ad;
+            color: white;
+            padding: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        .pdf-qa-row {
+            margin-bottom: 12px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+        }
+
+        .pdf-question {
+            font-weight: bold;
+            color: #444;
+            display: block;
+            margin-bottom: 4px;
+            font-size: 13px;
+        }
+        
+        /* 2. UPDATED ANSWER STYLE */
+        .pdf-answer {
+            color: #154360; /* Dark Blue for visibility */
+            font-size: 16px; /* Increased Size */
+            padding-left: 10px;
+            font-weight: 600; /* Semi-bold */
+        }
+        
+        #loading { text-align: center; color: #8e44ad; font-weight: bold; margin-top: 20px; }
+
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="logo-area">
+            <img src="aiinfo.webp" alt="Logo">
+        </div>
+
+        <div class="welcome-label">Welcome, HR Admin</div>
+        <div class="greet-note">Manage insights and growth.</div>
+
+        <div class="menu-item active">Feedback Insights</div>
+
+        <button class="logout-btn" onclick="logout()">← Logout</button>
+    </div>
+
+    <div class="main-content">
+        <div class="container">
+            
+            <div class="header-flex">
+                <h2>Employee Feedback Overview</h2>
+                <button class="btn-download" onclick="downloadPDF()">Download Report (PDF)</button>
+            </div>
+
+            <div class="data-card">
+                <div id="loading">Loading Feedback Data from SheetDB...</div>
+                
+                <table id="feedbackTable" style="display:none;">
+                    <thead>
+                        <tr>
+                            <th class="col-sno">S.No</th>
+                            <th class="col-token">Token</th>
+                            <th>Q1: Overall Exp</th>
+                            <th>Q2: Role</th>
+                            <th>Q3: Environment</th>
+                            <th>Q4: Respect</th>
+                            <th>Q5: Comm.</th>
+                            <th>Q6: Supervisor</th>
+                            <th>Q7: Workload</th>
+                            <th>Q8: Tools</th>
+                            <th>Q9: Learning</th>
+                            <th>Q10: Growth</th>
+                            <th>Q11: Work-Life</th>
+                            <th>Q12: Ideas</th>
+                            <th>Q13: Salary</th>
+                            <th>Q14: Recommend</th>
+                            <th>Q15: Comments</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="pdf-content">
+        <div class="pdf-main-header">Feedback Report</div>
+        <div id="pdf-body"></div>
+    </div>
+
+    <script>
+        // ==========================================
+        // CONFIGURATION
+        // ==========================================
+        const SHEETDB_API_URL = 'https://sheetdb.io/api/v1/r781uwwg4lmp9'; 
+        // ==========================================
+
+        let globalFeedbackData = [];
+
+        // MAPPING: Maps SheetDB Keys (Q1, Q2) to Full Question Text for the PDF
+        const questionMap = {
+            "Q1": "1. How satisfied are you with your overall experience working at AI Infotech?",
+            "Q2": "2. Do you clearly understand your role and responsibilities?",
+            "Q3": "3. How would you rate the work environment and office culture?",
+            "Q4": "4. Do you feel respected and valued by your team and management?",
+            "Q5": "5. How effective is communication between employees and management?",
+            "Q6": "6. Are you satisfied with the support and guidance provided by your immediate supervisor?",
+            "Q7": "7. Do you feel the workload assigned to you is reasonable and manageable?",
+            "Q8": "8. Are you provided with the necessary tools, resources, and technology?",
+            "Q9": "9. How satisfied are you with the learning and skill development opportunities?",
+            "Q10": "10. Do you feel there are fair opportunities for career growth and promotion?",
+            "Q11": "11. How would you rate the company’s policies related to work-life balance?",
+            "Q12": "12. Are your ideas, suggestions, or feedback encouraged and taken seriously?",
+            "Q13": "13. How satisfied are you with the salary, incentives, and benefits provided?",
+            "Q14": "14. Would you recommend AI Infotech as a good place to work to others?",
+            "Comments": "15. Additional Comments / Improvements"
+        };
+
+        window.onload = function() {
+            if (sessionStorage.getItem("userRole") !== "hr" && sessionStorage.getItem("userRole") !== "admin") {
+                alert("Access Denied. HR Access Only.");
+                window.location.href = "index.html"; 
+            }
+            fetchData();
+        };
+
+        function fetchData() {
+            fetch(SHEETDB_API_URL)
+            .then(response => response.json())
+            .then(data => {
+                globalFeedbackData = data;
+                renderTable(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('loading').innerText = "Failed to load data.";
+            });
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('tableBody');
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('feedbackTable').style.display = 'table';
+            tbody.innerHTML = "";
+
+            data.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="col-sno">${index + 1}</td>
+                    <td class="col-token">${row.Token || '-'}</td>
+                    <td>${row.Q1 || ''}</td>
+                    <td>${row.Q2 || ''}</td>
+                    <td>${row.Q3 || ''}</td>
+                    <td>${row.Q4 || ''}</td>
+                    <td>${row.Q5 || ''}</td>
+                    <td>${row.Q6 || ''}</td>
+                    <td>${row.Q7 || ''}</td>
+                    <td>${row.Q8 || ''}</td>
+                    <td>${row.Q9 || ''}</td>
+                    <td>${row.Q10 || ''}</td>
+                    <td>${row.Q11 || ''}</td>
+                    <td>${row.Q12 || ''}</td>
+                    <td>${row.Q13 || ''}</td>
+                    <td>${row.Q14 || ''}</td>
+                    <td>${row.Comments || ''}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function downloadPDF() {
+            const pdfBody = document.getElementById('pdf-body');
+            pdfBody.innerHTML = ""; 
+
+            globalFeedbackData.forEach((row, index) => {
+                let entryHtml = `<div class="pdf-entry">`;
+                
+                // HEADER: Reference Token
+                entryHtml += `
+                    <div class="pdf-ref-header">
+                        Reference Token: ${row.Token}
+                    </div>
+                `;
+                
+                // BODY: Full Question Text + Answer
+                for (const [key, fullQuestion] of Object.entries(questionMap)) {
+                    // Check if the data row has this key
+                    if (row[key]) {
+                        entryHtml += `
+                            <div class="pdf-qa-row">
+                                <span class="pdf-question">${fullQuestion}</span>
+                                <div class="pdf-answer">${row[key]}</div>
+                            </div>
+                        `;
+                    }
+                }
+                
+                entryHtml += `</div>`;
+                pdfBody.innerHTML += entryHtml;
+            });
+
+            const element = document.getElementById('pdf-content');
+            element.style.display = 'block';
+
+            var opt = {
+                margin:       0.5,
+                filename:     'Feedback_Report.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
+                pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                element.style.display = 'none';
+            });
+        }
+
+        function logout() {
+            sessionStorage.clear();
+            window.location.href = "index.html";
+        }
+    </script>
+
+</body>
+</html>
